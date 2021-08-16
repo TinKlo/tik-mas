@@ -1,0 +1,44 @@
+
+version: 2
+
+models:
+    - name: stg_channel_members
+      description: "the stg_channel_members table"
+      columns:
+          - name: member_id
+            description: "The primary key for this table"
+            tests:
+                - not_null
+
+    - name: messages
+      description: "A starter dbt model"
+      columns:
+          - name: user
+            description: "The primary key for this table"
+            tests:
+                - not_null
+
+    - name: users_profile
+      description: "users detailed  infos"
+
+sources:
+  - name: raw_slack
+    description: This is the main source of data, ingested by airbyte.
+    database: postgres
+    schema: public
+    loader: airbyte # informational only (free text)
+    loaded_at_field: _loaded_at # configure for all sources
+    tables:
+      - name: _airbyte_raw_channel_members
+        description: This is about members of a _airbyte_raw_stg_channel_members
+        columns:
+        - name: _airbyte_ab_id
+          description: id for the airbyte extraction
+          freshness:
+            warn_after: {count: 1, period: minute}
+            error_after: {count: 1, period: minute}
+          loaded_at_field: _airbyte_emitted_at
+          tests:
+            - not_null
+      - name: users_profile
+        description: This table brings the users profile
